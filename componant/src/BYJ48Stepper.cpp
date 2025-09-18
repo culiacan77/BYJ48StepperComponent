@@ -99,8 +99,8 @@ Stepper::Stepper(int number_of_steps, int motor_pin_1, int motor_pin_2) {
   this->motor_pin_2 = motor_pin_2;
 
   // setup the pins on the microcontroller:
-  gpio_set_direction((this->motor_Pin_1)pin, GPIO_MODE_OUTPUT);
-  gpio_set_direction((this->motor_pin_2)pin, GPIO_MODE_OUTPUT);
+  gpio_set_direction((gpio_num_t)this->motor_pin_1)pin, GPIO_MODE_OUTPUT);
+  gpio_set_direction((gpio_num_t)this->motor_pin_2)pin, GPIO_MODE_OUTPUT);
 
   // When there are only 2 pins, set the others to 0:
   this->motor_pin_3 = 0;
@@ -130,10 +130,10 @@ Stepper::Stepper(int number_of_steps, int motor_pin_1, int motor_pin_2,
   this->motor_pin_4 = motor_pin_4;
 
   // setup the pins on the microcontroller:
-  gpio_set_direction((this->motor_Pin_1)pin, GPIO_MODE_OUTPUT);
-  gpio_set_direction((this->motor_pin_2)pin, GPIO_MODE_OUTPUT);
-  gpio_set_direction((this->motor_Pin_3)pin, GPIO_MODE_OUTPUT);
-  gpio_set_direction((this->motor_pin_4)pin, GPIO_MODE_OUTPUT);
+  gpio_set_direction((gpio_num_t)this->motor_Pin_1)pin, GPIO_MODE_OUTPUT);
+  gpio_set_direction((gpio_num_t)this->motor_pin_2)pin, GPIO_MODE_OUTPUT);
+  gpio_set_direction((gpio_num_t)this->motor_Pin_3)pin, GPIO_MODE_OUTPUT);
+  gpio_set_direction((gpio_num_t)this->motor_pin_4)pin, GPIO_MODE_OUTPUT);
 
   // When there are 4 pins, set the others to 0:
   this->motor_pin_5 = 0;
@@ -162,11 +162,11 @@ Stepper::Stepper(int number_of_steps, int motor_pin_1, int motor_pin_2,
   this->motor_pin_5 = motor_pin_5;
 
   // setup the pins on the microcontroller:
-  gpio_set_direction((this->motor_Pin_1)pin, GPIO_MODE_OUTPUT);
-  gpio_set_direction((this->motor_pin_2)pin, GPIO_MODE_OUTPUT);
-  gpio_set_direction((this->motor_Pin_3)pin, GPIO_MODE_OUTPUT);
-  gpio_set_direction((this->motor_pin_4)pin, GPIO_MODE_OUTPUT);
-  gpio_set_direction((this->motor_pin_5)pin, GPIO_MODE_OUTPUT);
+  gpio_set_direction((gpio_num_t)this->motor_pin_1)pin, GPIO_MODE_OUTPUT);
+  gpio_set_direction((gpio_num_t)this->motor_pin_2)pin, GPIO_MODE_OUTPUT);
+  gpio_set_direction((gpio_num_t)this->motor_Pin_3)pin, GPIO_MODE_OUTPUT);
+  gpio_set_direction((gpio_num_t)this->motor_pin_4)pin, GPIO_MODE_OUTPUT);
+  gpio_set_direction((gpio_num_t)this->motor_pin_5)pin, GPIO_MODE_OUTPUT);
 
   // pin_count is used by the stepMotor() method:
   this->pin_count = 5;
