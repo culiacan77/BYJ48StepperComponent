@@ -167,7 +167,7 @@ Stepper::Stepper(int number_of_steps, int motor_pin_1, int motor_pin_2,
   gpio_set_direction((this->motor_Pin_3)pin, GPIO_MODE_OUTPUT);
   gpio_set_direction((this->motor_pin_4)pin, GPIO_MODE_OUTPUT);
   gpio_set_direction((this->motor_pin_5)pin, GPIO_MODE_OUTPUT);
- 
+
   // pin_count is used by the stepMotor() method:
   this->pin_count = 5;
 }
