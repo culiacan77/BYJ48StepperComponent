@@ -28,8 +28,7 @@ extern "C" void app_main(void) {
  *    4  1  0  0  1
  */
 
-#include "Arduino.h"
-#include <Stepper.h>
+#include <BYJ48Stepper.h>
 
 Stepper::Stepper(int numberOfSteps, int motorPin1, int motorPin2, int motorPin3,
                  int motorPin4) {

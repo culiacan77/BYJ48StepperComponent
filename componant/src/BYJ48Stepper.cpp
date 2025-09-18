@@ -75,8 +75,7 @@
  * http://www.arduino.cc/en/Tutorial/Stepper
  */
 
-#include "Arduino.h"
-#include "Stepper.h"
+#include "BYJ48Stepper.h"
 
 /*
  * two-wire constructor.
