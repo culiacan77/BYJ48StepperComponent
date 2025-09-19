@@ -1,6 +1,7 @@
 #include "driver/gpio.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include <cstdlib> //pour pouvoir utiliser abs (valeur absolue)
 
 constexpr gpio_num_t LED_PIN = GPIO_NUM_2;
 
@@ -29,56 +30,64 @@ extern "C" void app_main(void) {
  */
 
 #include <BYJ48Stepper.h>
-
-Stepper::Stepper(int numberOfSteps, int motorPin1, int motorPin2, int motorPin3,
-                 int motorPin4) {
-  this->stepNumber = 0;                // which step the motor is on
-  this->direction = 0;                 // motor direction
-  this->numberOfSteps = numberOfSteps; // total number of steps for this motor
-  this->lastStepTime = 0;              // timestamp in us of the last step taken
+// xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx ?? je peux avoir motorpin1 ou il faut la
+// mêmechose que dans la déclaration du constructeur ??
+Stepper::Stepper(int number_of_steps, int motor_pin_1, int motor_pin_2,
+                 int motor_pin_3, int motor_pin_4) {
+  this->step_number = 0; // which step the motor is on
+  this->direction = 0;   // motor direction
+  this->number_of_steps =
+      number_of_steps;    // total number of steps for this motor
+  this->lastStepTime = 0; // timestamp in us of the last step taken
 
   // Arduino pins for the motor control connection:
-  this->motorPin1 = motorPin1;
-  this->motorPin2 = motorPin2;
-  this->motorPin3 = motorPin3;
-  this->motorPin4 = motorPin4;
+  this->motor_pin_1 = motor_pin_1;
+  this->motor_pin_2 = motor_pin_2;
+  this->motor_pin_3 = motor_pin_3;
+  this->motor_pin_4 = motor_pin_4;
 
   // setup the pins on the microcontroller:   //output car l'ESP envoi in
   // signal, c'est quelquechose qui sort. ça porte à confusion car pour moi un
   // input c'est quelquechose que l'on donne. mais là un input c'est l'écoute
   // d'un signal.
-  pinMode(this->motorPin1, OUTPUT);
-  pinMode(this->motorPin2, OUTPUT);
-  pinMode(this->motorPin3, OUTPUT);
-  pinMode(this->motorPin4, OUTPUT);
+  gpio_set_direction((gpio_num_t)this->motor_pin_1,
+                     GPIO_MODE_OUTPUT); // comprend pas ? pas de definition ?
+  gpio_set_direction((gpio_num_t)this->motor_pin_2, GPIO_MODE_OUTPUT);
+  gpio_set_direction((gpio_num_t)this->motor_pin_3, GPIO_MODE_OUTPUT);
+  gpio_set_direction((gpio_num_t)this->motor_pin_4, GPIO_MODE_OUTPUT);
 }
 
 // Set motor speed in revs/min
 void Stepper::setSpeed(long motorSpeed) {
   this->stepDelay =
-      60L * 1000L / this->numberOfSteps /
-      motorSpeed; // L signifie long integer. pour pouvoir contenir 60 *1000 *
-                  // grand nombre. On peut dépasser la limite de int comme ça
+      60L * 1000L / this->number_of_steps /
+      motorSpeed; // L signifie long integer. pour pouvoir contenir 60 *1000. On
+                  // peut dépasser la limite de int comme ça
+                  // + motorSpeed est grand plus step delay est court donc plus
+                  // le moteur tourne vite.
 }
 
-void Stepper::step(int numberOfSteps) {
-  int stepsLeft = abs(numberOfSteps); // abs = absolute value, est défini dans
-                                      // les fonctions arduino de base
+void Stepper::step(
+    int number_of_steps) { // c'est cette méthode qui fait tourner le moteur.
+  int steps_left =
+      std::abs(number_of_steps); // abs = absolute value, est défini dans
+                                 // les fonctions arduino de base. Permet de
+                                 // toujours avoir une valeur positive
 
   // determine direction based on whether steps_to_mode is + or -:
-  if (numberOfSteps > 0) {
+  if (number_of_steps > 0) {
     this->direction = 1;
   }
-  if (numberOfSteps < 0) {
+  if (number_of_steps < 0) {
     this->direction = 0;
   }
 
   // decrement the number of steps, moving one step each time:
-  while (stepsLeft > 0) {
+  while (steps_left > 0) {
     unsigned long now =
-        micros(); // cest une fonction de la librairie arduino qui renvoie le
-                  // temps écoulé depuis le démarrage en microseconde = 1'000
-                  // millième de seconde.
+        esp_timer_get_time(); // cest une fonction de la librairie esp idf qui
+                              // renvoie le temps écoulé depuis le démarrage en
+                              // microseconde = 1'000 millième de seconde.
     // move only if the appropriate delay has passed:
     if (now - this->lastStepTime >=
         this->stepDelay) // si le temps écoulé depuis le démarage - le temps
@@ -90,21 +99,21 @@ void Stepper::step(int numberOfSteps) {
       // increment or decrement the step number,
       // depending on direction:
       if (this->direction == 1) {
-        this->stepNumber++;
-        if (this->stepNumber == this->numberOfSteps) {
-          this->stepNumber = 0;
+        this->step_number++;
+        if (this->step_number == this->number_of_steps) {
+          this->step_number = 0;
         }
       } else {
-        if (this->stepNumber == 0) {
-          this->stepNumber = this->numberOfSteps;
+        if (this->step_number == 0) {
+          this->step_number = this->number_of_steps;
         }
-        this->stepNumber--;
+        this->step_number--;
       }
       // decrement the steps left:
       steps_left--;
       // step the motor to step number 0, 1, 2, 3
       runStepMotor(
-          this->stepNumber %
+          this->step_number %
           4); // le modulo garanti qu'on reste dans l'intervale [0, 3]. il
               // regarde quel est le multiple de quatre le plus grand par lequel
               // on peut diviser le nombre et nous retourne le reste.
@@ -119,28 +128,28 @@ void Stepper::runStepMotor(
 {
   switch (thisStep) {
   case 0: // 1010
-    digitalWrite(motor_pin_1, HIGH);
-    digitalWrite(motor_pin_2, LOW);
-    digitalWrite(motor_pin_3, HIGH);
-    digitalWrite(motor_pin_4, LOW);
+    gpio_set_level(motor_pin_1, 1);
+    gpio_set_level(motor_pin_2, 0);
+    gpio_set_level(motor_pin_3, 1);
+    gpio_set_level(motor_pin_4, 0);
     break;
   case 1: // 0110
-    digitalWrite(motor_pin_1, LOW);
-    digitalWrite(motor_pin_2, HIGH);
-    digitalWrite(motor_pin_3, HIGH);
-    digitalWrite(motor_pin_4, LOW);
+    gpio_set_level(motor_pin_1, 0);
+    gpio_set_level(motor_pin_2, 1);
+    gpio_set_level(motor_pin_3, 1);
+    gpio_set_level(motor_pin_4, 0);
     break;
   case 2: // 0101
-    digitalWrite(motor_pin_1, LOW);
-    digitalWrite(motor_pin_2, HIGH);
-    digitalWrite(motor_pin_3, LOW);
-    digitalWrite(motor_pin_4, HIGH);
+    gpio_set_level(motor_pin_1, 0);
+    gpio_set_level(motor_pin_2, 1);
+    gpio_set_level(motor_pin_3, 0);
+    gpio_set_level(motor_pin_4, 1);
     break;
   case 3: // 1001
-    digitalWrite(motor_pin_1, HIGH);
-    digitalWrite(motor_pin_2, LOW);
-    digitalWrite(motor_pin_3, LOW);
-    digitalWrite(motor_pin_4, HIGH);
+    gpio_set_level(motor_pin_1, 1);
+    gpio_set_level(motor_pin_2, 0);
+    gpio_set_level(motor_pin_3, 0);
+    gpio_set_level(motor_pin_4, 1);
     break;
   }
 }
